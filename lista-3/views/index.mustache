@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo List - Autenticação, Grupo e Tarefas</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1, h2 { color: #333; }
+    form { margin-bottom: 20px; }
+    input[type="text"],
+    input[type="password"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; }
+    .add-btn { background-color: #28a745; color: #fff; }
+    .logout { margin-top: 10px; display: inline-block; }
+    #taskList { list-style: none; padding: 0; }
+    #taskList li { background-color: #fff; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+    #taskList li.done { text-decoration: line-through; color: #888; }
+    .removeBtn { background-color: #dc3545; color: #fff; border: none; border-radius: 4px; padding: 5px 10px; margin-left: 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Bem-vindo, {{#user}}{{user}}{{/user}}{{^user}}Visitante{{/user}}</h1>
+  
+  <!-- Se o usuário não estiver autenticado, exibe o formulário de login -->
+  {{^isAuthenticated}}
+    <h2>Login</h2>
+    <form action="/salvauser" method="POST">
+      <input type="text" name="usuario" placeholder="Digite seu nome" required>
+      <input type="password" name="senha" placeholder="Digite sua senha" required>
+      <input type="text" name="grupo" placeholder="Digite seu grupo" required>
+      <button type="submit" class="add-btn">Entrar</button>
+    </form>
+  {{/isAuthenticated}}
+  
+  <!-- Se o usuário estiver autenticado, exibe opção de logout e formulário para adicionar tarefa -->
+  {{#isAuthenticated}}
+    <a href="/logout" class="logout">Logout</a>
+    <p>Grupo: {{group}}</p>
+    <h2>Adicionar Tarefa</h2>
+    <!-- O formulário abaixo também pode ser enviado via JS, mas neste exemplo usa POST tradicional -->
+    <form action="/addtask" method="POST">
+      <input type="text" name="task" placeholder="Nova tarefa" required>
+      <button type="submit" class="add-btn">Adicionar</button>
+    </form>
+  {{/isAuthenticated}}
+  
+  <h2>Lista de Tarefas</h2>
+  <!-- Estrutura de lista de tarefas manipulada via DOM -->
+  <ul id="taskList">
+    {{#tasks}}
+      <li data-index="{{@index}}" class="{{#done}}done{{/done}}">
+        {{text}}
+        <button class="removeBtn">Remover</button>
+      </li>
+    {{/tasks}}
+  </ul>
+
+  <p>
+    <a href="/random">Número Aleatório</a> |
+    <a href="/contador">Contadores</a>
+  </p>
+
+  <!-- Script para manipulação do DOM na lista de tarefas -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const taskList = document.getElementById('taskList');
+
+      taskList.addEventListener('click', (event) => {
+        if (event.target.classList.contains('removeBtn')) return;
+        const li = event.target.closest('li');
+        if (li) {
+          li.classList.toggle('done');
+        }
+      });
+
+      document.querySelectorAll('.removeBtn').forEach(button => {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const li = event.target.closest('li');
+          if (li) {
+            li.remove();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
