@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo List - Tarefas</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <h1>Bem-vindo, {{#user}}{{user}}{{/user}}{{^user}}Visitante{{/user}}</h1>
+  
+  {{^isAuthenticated}}
+  <h2>Login</h2>
+  <form action="/salvauser" method="POST">
+    <input type="text" name="usuario" placeholder="Digite seu nome" required>
+    <input type="password" name="senha" placeholder="Digite sua senha" required>
+    <input type="text" name="grupo" placeholder="Digite seu grupo" required>
+    <button type="submit" id="loginBtn">Entrar</button>
+  </form>
+  {{/isAuthenticated}}
+  
+  {{#isAuthenticated}}
+  <a href="/logout">Logout</a>
+  <p>Grupo: {{group}}</p>
+  <h2>Adicionar Tarefa</h2>
+  <form action="/addtask" method="POST">
+    <input type="text" name="task" id="taskInput" placeholder="Digite sua tarefa aqui" required>
+    <select name="priority" required>
+      <option value="">Selecione Prioridade</option>
+      <option value="Baixa">Baixa</option>
+      <option value="Média">Média</option>
+      <option value="Alta">Alta</option>
+    </select>
+    <button type="submit" id="addTaskBtn">Adicionar Tarefa</button>
+  </form>
+  
+  <h2>Lista de Tarefas</h2>
+  <ul id="taskList">
+    {{#tasks}}
+    <li class="task-item {{#completed}}completed{{/completed}}">
+      <!-- O nome da tarefa é um link que chama a rota /complete/:id para finalizar a tarefa -->
+      <a href="/complete/{{id}}" class="priority-{{priority}}">{{description}}</a> - <span>{{priority}}</span>
+      <form action="/removetask" method="POST" style="display:inline;">
+        <input type="hidden" name="id" value="{{id}}">
+        <button type="submit" class="removeBtn">Remover</button>
+      </form>
+    </li>
+    {{/tasks}}
+  </ul>
+  {{/isAuthenticated}}
+  
+  <p>
+    <a href="/list">Listar Tarefas Ordenadas</a> | 
+    <a href="/stats">Estatísticas</a>
+  </p>
+</body>
+</html>

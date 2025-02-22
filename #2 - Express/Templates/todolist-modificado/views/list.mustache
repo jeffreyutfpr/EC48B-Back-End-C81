@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Tarefas Ordenadas</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Lista de Tarefas (Ordem Alfabética)</h1>
+    <ul>
+        {{#tasks}}
+        <li class="task-item {{#completed}}completed{{/completed}}">
+            <!-- Ao clicar no nome, a tarefa é finalizada -->
+            <a href="/complete/{{id}}" class="priority-{{priority}}">{{description}}</a> - <span>{{priority}}</span>
+        </li>
+        {{/tasks}}
+    </ul>
+    <a href="/">Voltar</a>
+</body>
+</html>
