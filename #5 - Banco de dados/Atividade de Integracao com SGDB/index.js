@@ -15,7 +15,9 @@ const db = new sqlite3.Database('./tasks.db', (err) => {
     db.run(`
       CREATE TABLE IF NOT EXISTS tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        completed INTEGER NOT NULL DEFAULT 0
       )
     `, (err) => {
       if (err) {
@@ -31,22 +33,43 @@ app.get('/tasks', (req, res) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.json(rows);
+    const tasks = rows.map(task => ({
+      ...task,
+      completed: task.completed === 1
+    }));
+    res.json(tasks);
   });
 });
 
 app.post('/tasks', (req, res) => {
-  const { title } = req.body;
-  if (!title) {
-    return res.status(400).json({ error: "O campo 'title' é obrigatório." });
+  const { title, description } = req.body;
+
+  if (!title || !description) {
+    return res.status(400).json({ error: "Os campos 'title' e 'description' são obrigatórios." });
   }
 
-  const sql = "INSERT INTO tasks (title) VALUES (?)";
-  db.run(sql, [title], function(err) {
+  const sql = "INSERT INTO tasks (title, description, completed) VALUES (?, ?, ?)";
+  db.run(sql, [title, description, 0], function(err) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.status(201).json({ id: this.lastID, title });
+    res.status(201).json({ id: this.lastID, title, description, completed: false });
+  });
+});
+
+app.put('/tasks/:id', (req, res) => {
+  const taskId = parseInt(req.params.id, 10);
+  const { title, description, completed } = req.body;
+
+  const sql = "UPDATE tasks SET title = ?, description = ?, completed = ? WHERE id = ?";
+  db.run(sql, [title, description, completed ? 1 : 0, taskId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ error: "Tarefa não encontrada." });
+    }
+    res.json({ id: taskId, title, description, completed });
   });
 });
 
